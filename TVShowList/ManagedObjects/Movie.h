@@ -13,9 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface Movie : NSManagedObject
 
-+ (Movie *)insertMovieWithDetails:(NSDictionary *)details
-                       pageNumber:(NSUInteger)pageNumber
-                          context:(NSManagedObjectContext *)context;
++ (Movie *)insertMovieWithID:(NSString *)movieID
+                     details:(NSDictionary *)details
+                  pageNumber:(NSUInteger)pageNumber
+                     context:(NSManagedObjectContext *)context;
 
 + (NSArray <Movie *> *)insertMoviesWithArrayOfData:(NSArray <NSDictionary *> *)array
                                         pageNumber:(NSUInteger)pageNumber

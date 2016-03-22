@@ -19,5 +19,6 @@
 @dynamic rating;
 @dynamic page;
 @dynamic name;
+@dynamic movieID;
 
 @end

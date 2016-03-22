@@ -10,19 +10,21 @@
 #import "DetailViewController.h"
 
 #import "MovieListTableViewCell.h"
+#import "MovieListHeaderTableViewCell.h"
 
 #import "Movie.h"
 
 #import "APIRequestManager.h"
 #import "DataManager.h"
 
+#import "NSManagedObject+Convenince.h"
 #import "UIAlertController+Convenience.h"
 
-@interface MasterViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface MasterViewController () <UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
-@property (strong, nonatomic) NSArray <Movie *> *movies;
+@property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
 
 @property (assign, nonatomic) BOOL isFetchingMovies;
 @property (assign, nonatomic) BOOL didReachEndOfResults;
@@ -34,23 +36,23 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [[DataManager sharedManager] deleteAllData];
     [self reloadData];
     
-    if (self.movies.count == 0) {
+    if (self.fetchedResultsController.fetchedObjects.count == 0) {
         [self fetchMovieList];
     }
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)dealloc {
+    _tableView.dataSource = nil;
+    _tableView.delegate = nil;
+    _fetchedResultsController.delegate = nil;
 }
 
 #pragma mark - Private Methods
 
 - (void)reloadData {
-    self.movies = [Movie allMoviesWithContext:[DataManager sharedManager].managedObjectContext];
+    [self.fetchedResultsController performFetch:nil];
     [self.tableView reloadData];
 }
 
@@ -66,10 +68,56 @@
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 }
 
+#pragma mark - Lazy Init
+
+- (NSFetchedResultsController *)fetchedResultsController {
+    if (!_fetchedResultsController) {
+        NSManagedObjectContext *context = [DataManager sharedManager].managedObjectContext;
+        
+        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] initWithEntityName:[Movie entityName]];
+        fetchRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"movieID" ascending:YES]];
+        _fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                                                        managedObjectContext:context
+                                                                          sectionNameKeyPath:@"page"
+                                                                                   cacheName:nil];
+        _fetchedResultsController.delegate = self;
+    }
+    
+    return _fetchedResultsController;
+}
+
 #pragma mark - UITableViewDataSource / UITableViewDelegate
 
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return self.fetchedResultsController.sections.count;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 40.0;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    id <NSFetchedResultsSectionInfo> sectionInfo = self.fetchedResultsController.sections[section];
+    NSInteger numericSection = [[sectionInfo name] integerValue] / 10;
+    NSString *sectionTitle;
+    
+    if (numericSection == 0) {
+        sectionTitle = @"Tonight";
+    } else if (numericSection == 1) {
+        sectionTitle = @"A Day From Now";
+    } else {
+        sectionTitle = [NSString stringWithFormat:@"%lu Days From Now", numericSection];
+    }
+    
+    NSString *cellIdentifier = [MovieListHeaderTableViewCell cellIdentifier];
+    MovieListHeaderTableViewCell *headerView = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    headerView.title = sectionTitle;
+    return headerView;
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.movies.count;
+    id <NSFetchedResultsSectionInfo> sectionInfo = self.fetchedResultsController.sections[section];
+    return [sectionInfo numberOfObjects];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -83,14 +131,18 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *cellIdentifier = [MovieListTableViewCell cellIdentifier];
     MovieListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
-    cell.movie = self.movies[indexPath.row];
+    cell.movie = [self.fetchedResultsController objectAtIndexPath:indexPath];
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == self.movies.count-1) {
-        if (!self.didReachEndOfResults) {
-            [self fetchMovieList];
+    // Start fetching the next data.
+    if (!self.didReachEndOfResults) {
+        if (indexPath.section == self.fetchedResultsController.sections.count-1) {
+            id <NSFetchedResultsSectionInfo> sectionInfo = self.fetchedResultsController.sections[indexPath.section];
+            if (indexPath.row == [sectionInfo numberOfObjects]-1) {
+                [self fetchMovieList];
+            }
         }
     }
 }
@@ -103,7 +155,7 @@
     }
     
     NSManagedObjectContext *context = [DataManager sharedManager].managedObjectContext;
-    NSUInteger start = self.movies.count;
+    NSUInteger start = self.fetchedResultsController.fetchedObjects.count;
     
     [self showBottomActivityIndicator];
 
@@ -136,12 +188,9 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
-//        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-//        NSDate *object = self.objects[indexPath.row];
-//        DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-//        [controller setDetailItem:object];
-//        controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-//        controller.navigationItem.leftItemsSupplementBackButton = YES;
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        DetailViewController *detailViewController = (DetailViewController *)[[segue destinationViewController] topViewController];
+        detailViewController.movie = [self.fetchedResultsController objectAtIndexPath:indexPath];
     }
 }
 

@@ -12,25 +12,21 @@
 
 @implementation Movie
 
-+ (Movie *)insertMovieWithDetails:(NSDictionary *)details
-                       pageNumber:(NSUInteger)pageNumber
-                          context:(NSManagedObjectContext *)context {
++ (Movie *)insertMovieWithID:(NSString *)movieID
+                     details:(NSDictionary *)details
+                  pageNumber:(NSUInteger)pageNumber
+                     context:(NSManagedObjectContext *)context {
+    
     NSString *name      = details[@"name"];
     NSString *channel   = details[@"channel"];
     NSString *startTime = details[@"start_time"];
     NSString *endTime   = details[@"end_time"];
     NSString *rating    = details[@"rating"];
     NSNumber *page      = @(pageNumber);
-    
-    NSMutableArray *subPredicates = [[NSMutableArray alloc] init];
-    [subPredicates addObject:[NSPredicate predicateWithFormat:@"name == %@", name]];
-    [subPredicates addObject:[NSPredicate predicateWithFormat:@"channel == %@", channel]];
-    [subPredicates addObject:[NSPredicate predicateWithFormat:@"startTime == %@", startTime]];
-    [subPredicates addObject:[NSPredicate predicateWithFormat:@"endTime == %@", endTime]];
-    
+
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [[self class] entityDescriptionWithContext:context];
-    fetchRequest.predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subPredicates];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"movieID == %@", movieID];
     fetchRequest.fetchLimit = 1;
 
     NSArray *results = [context executeFetchRequest:fetchRequest error:nil];
@@ -39,6 +35,7 @@
     // If no movie found, insert the object
     if (!movie) {
         movie = [[self class] insertNewObjectWithContext:context];
+        movie.movieID   = movieID;
         movie.name      = name;
         movie.channel   = channel;
         movie.startTime = startTime;
@@ -54,8 +51,12 @@
                                         pageNumber:(NSUInteger)pageNumber
                                           context:(NSManagedObjectContext *)context {
     NSMutableArray *movies = [[NSMutableArray alloc] init];
+    NSUInteger i = pageNumber;
     for (NSDictionary *details in array) {
-        Movie *movie = [Movie insertMovieWithDetails:details pageNumber:pageNumber context:context];
+        Movie *movie = [Movie insertMovieWithID:[NSString stringWithFormat:@"%lu", (unsigned long)i++]
+                                        details:details
+                                     pageNumber:pageNumber
+                                        context:context];
         [movies addObject:movie];
     }
     return movies;
@@ -76,6 +77,7 @@
 + (NSArray <Movie *> *)allMoviesWithContext:(NSManagedObjectContext *)context {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = [[self class] entityDescriptionWithContext:context];
+    fetchRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"movieID" ascending:YES]];
     return [context executeFetchRequest:fetchRequest error:nil];
 }
 

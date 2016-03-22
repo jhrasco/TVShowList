@@ -33,7 +33,7 @@
     NSString *channelImageName = [NSString stringWithFormat:@"Station%@", movie.channel];
     self.channelImageView.image = [UIImage imageNamed:channelImageName];
     
-    NSString *ratingImageName = [NSString stringWithFormat:@"Rating%@", movie.rating];
+    NSString *ratingImageName = [NSString stringWithFormat:@"Rating%@", movie.rating.length == 0 ? @"NR" : movie.rating];
     self.ratingImageView.image = [UIImage imageNamed:ratingImageName];
 }
 

@@ -25,6 +25,7 @@
 		DC72A50E1CA121AD00E6590A /* DataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DC72A50D1CA121AD00E6590A /* DataManager.m */; };
 		DC72A5111CA124AE00E6590A /* NSManagedObject+Convenince.m in Sources */ = {isa = PBXBuildFile; fileRef = DC72A5101CA124AE00E6590A /* NSManagedObject+Convenince.m */; };
 		DC72A5141CA12B4F00E6590A /* UIAlertController+Convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = DC72A5131CA12B4F00E6590A /* UIAlertController+Convenience.m */; };
+		DC72A5171CA1437E00E6590A /* MovieListHeaderTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = DC72A5161CA1437E00E6590A /* MovieListHeaderTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,8 @@
 		DC72A5101CA124AE00E6590A /* NSManagedObject+Convenince.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Convenince.m"; sourceTree = "<group>"; };
 		DC72A5121CA12B4F00E6590A /* UIAlertController+Convenience.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertController+Convenience.h"; sourceTree = "<group>"; };
 		DC72A5131CA12B4F00E6590A /* UIAlertController+Convenience.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertController+Convenience.m"; sourceTree = "<group>"; };
+		DC72A5151CA1437E00E6590A /* MovieListHeaderTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovieListHeaderTableViewCell.h; sourceTree = "<group>"; };
+		DC72A5161CA1437E00E6590A /* MovieListHeaderTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovieListHeaderTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +161,8 @@
 				DC72A4EA1CA117F700E6590A /* TableViewCell.m */,
 				DC72A4EC1CA1181000E6590A /* MovieListTableViewCell.h */,
 				DC72A4ED1CA1181000E6590A /* MovieListTableViewCell.m */,
+				DC72A5151CA1437E00E6590A /* MovieListHeaderTableViewCell.h */,
+				DC72A5161CA1437E00E6590A /* MovieListHeaderTableViewCell.m */,
 			);
 			path = TableViewCells;
 			sourceTree = "<group>";
@@ -353,6 +358,7 @@
 				DC72A5001CA11D7000E6590A /* APIRequestManager.m in Sources */,
 				DC72A4F91CA11C2B00E6590A /* MasterViewController.m in Sources */,
 				DC72A5051CA1212200E6590A /* DataModel.xcdatamodeld in Sources */,
+				DC72A5171CA1437E00E6590A /* MovieListHeaderTableViewCell.m in Sources */,
 				DC72A4F41CA11C2000E6590A /* AppDelegate.m in Sources */,
 				DC72A4FA1CA11C2B00E6590A /* DetailViewController.m in Sources */,
 			);
